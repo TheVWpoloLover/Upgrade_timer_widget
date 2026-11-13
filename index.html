@@ -202,6 +202,14 @@
       color: var(--muted);
     }
 
+    .timer-flags { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .flag { display:inline-block; border:1px solid var(--border); border-radius:999px; padding:4px 8px; color:var(--muted); font-size:.74rem; }
+    .flag.extra { color:#ffd18a; border-color:#72562b; }
+    .helper-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .helper-row:last-child { border-bottom:0; }
+    .inline-setting { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .inline-setting select { width:auto; padding:7px 10px; }
+
     @media (max-width: 480px) {
       body { padding: 12px; }
       .form-grid { grid-template-columns: 1fr; }
@@ -255,15 +263,36 @@
         <strong id="nextFinish">—</strong>
       </div>
       <div class="stat">
-        <span class="muted">Builders busy*</span>
+        <span class="muted">Regular builders busy</span>
         <strong id="buildersBusy">—</strong>
       </div>
       <div class="stat">
-        <span class="muted">Builders free*</span>
+        <span class="muted">Regular builders free</span>
         <strong id="buildersFree">—</strong>
       </div>
+      <div class="stat">
+        <span class="muted">Goblin Builder</span>
+        <strong id="goblinBuilder">—</strong>
+      </div>
+      <div class="stat">
+        <span class="muted">Laboratory jobs</span>
+        <strong id="labCount">0</strong>
+      </div>
     </div>
-    <p class="muted">*Builder counts are estimates based on imported building timers.</p>
+    <div class="inline-setting">
+      <span class="muted">Your regular builder count:</span>
+      <select id="builderCapacity" aria-label="Number of regular builders">
+        <option value="5">5 builders</option>
+        <option value="6" selected>6 builders</option>
+      </select>
+    </div>
+    <p class="muted">Regular builder counts exclude an upgrade marked as an extra slot (for example, the Goblin Builder). Adjust the builder count to match your village.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Helpers</h2>
+    <p class="muted" id="helperSummary">Import your export to see helper levels and the shared workday cooldown.</p>
+    <div id="helperList"></div>
   </section>
 
   <section class="panel">
@@ -306,20 +335,23 @@
 
   const state = {
     timers: [],
+    helpers: [],
     playerTag: "",
     townHall: null,
-    exportTimestamp: null
+    exportTimestamp: null,
+    standardBuilderCount: 6
   };
 
-  // Known names for common export IDs. Unknown IDs remain visible as IDs.
+  // Home Village names sourced from current community-maintained Clash data-ID maps.
   const itemNames = {
+    "1000000": "Army Camp",
     "1000001": "Town Hall",
-    "1000002": "Gold Mine",
-    "1000003": "Elixir Collector",
-    "1000004": "Gold Storage",
-    "1000005": "Elixir Storage",
+    "1000002": "Elixir Collector",
+    "1000003": "Elixir Storage",
+    "1000004": "Gold Mine",
+    "1000005": "Gold Storage",
     "1000006": "Barracks",
-    "1000007": "Army Camp",
+    "1000007": "Laboratory",
     "1000008": "Cannon",
     "1000009": "Archer Tower",
     "1000010": "Wall",
@@ -328,39 +360,118 @@
     "1000013": "Mortar",
     "1000014": "Clan Castle",
     "1000015": "Builder's Hut",
-    "1000016": "Hidden Tesla",
-    "1000017": "Spell Factory",
-    "1000018": "X-Bow",
-    "1000019": "Dark Elixir Drill",
-    "1000020": "Dark Elixir Storage",
-    "1000021": "Dark Barracks",
-    "1000022": "Inferno Tower",
-    "1000023": "Eagle Artillery",
-    "1000024": "Bomb",
-    "1000025": "Spring Trap",
-    "1000026": "Air Bomb",
-    "1000027": "Archer Tower / Cannon / Mortar",
-    "1000068": "Hero / Defense",
-    "1000085": "Building",
+    "1000019": "Hidden Tesla",
+    "1000020": "Spell Factory",
+    "1000021": "X-Bow",
+    "1000023": "Dark Elixir Drill",
+    "1000024": "Dark Elixir Storage",
+    "1000026": "Dark Barracks",
+    "1000027": "Inferno Tower",
+    "1000028": "Air Sweeper",
+    "1000029": "Dark Spell Factory",
+    "1000031": "Eagle Artillery",
+    "1000032": "Bomb Tower",
+    "1000059": "Workshop",
+    "1000064": "B.O.B's Hut",
+    "1000067": "Scattershot",
+    "1000068": "Pet House",
+    "1000070": "Blacksmith",
+    "1000071": "Hero Hall",
+    "1000072": "Spell Tower",
+    "1000077": "Monolith",
+    "1000079": "Multi-Gear Tower",
+    "1000084": "Multi-Archer Tower",
+    "1000085": "Ricochet Cannon",
+    "1000086": "Revenge Tower",
+    "1000089": "Firespitter",
+    "1000093": "Helper Hut",
+    "1000097": "Crafting Station",
+    "12000000": "Bomb",
+    "12000001": "Spring Trap",
+    "12000002": "Giant Bomb",
+    "12000005": "Air Bomb",
+    "12000006": "Seeking Air Mine",
+    "12000008": "Skeleton Trap",
+    "12000016": "Tornado Trap",
+    "12000020": "Giga Bomb",
     "28000000": "Barbarian King",
     "28000001": "Archer Queen",
-    "28000002": "Minion Prince",
-    "28000003": "Grand Warden",
+    "28000002": "Grand Warden",
     "28000004": "Royal Champion",
+    "28000006": "Minion Prince",
+    "28000007": "Dragon Duke",
     "4000000": "Barbarian",
     "4000001": "Archer",
-    "4000002": "Giant",
-    "4000003": "Goblin",
+    "4000002": "Goblin",
+    "4000003": "Giant",
     "4000004": "Wall Breaker",
     "4000005": "Balloon",
     "4000006": "Wizard",
+    "4000007": "Healer",
+    "4000008": "Dragon",
+    "4000009": "P.E.K.K.A",
+    "4000010": "Minion",
+    "4000011": "Hog Rider",
+    "4000012": "Valkyrie",
+    "4000013": "Golem",
+    "4000015": "Witch",
+    "4000017": "Lava Hound",
+    "4000022": "Bowler",
+    "4000023": "Baby Dragon",
+    "4000024": "Miner",
+    "4000051": "Wall Wrecker",
+    "4000052": "Battle Blimp",
+    "4000053": "Yeti",
+    "4000058": "Ice Golem",
+    "4000059": "Electro Dragon",
+    "4000062": "Stone Slammer",
+    "4000065": "Dragon Rider",
+    "4000075": "Siege Barracks",
+    "4000082": "Headhunter",
+    "4000087": "Log Launcher",
+    "4000091": "Flame Flinger",
+    "4000092": "Battle Drill",
+    "4000095": "Electro Titan",
+    "4000097": "Apprentice Warden",
+    "4000110": "Root Rider",
+    "4000123": "Druid",
+    "4000132": "Thrower",
+    "4000135": "Troop Launcher",
+    "4000150": "Furnace",
     "26000000": "Lightning Spell",
     "26000001": "Healing Spell",
     "26000002": "Rage Spell",
+    "26000003": "Jump Spell",
+    "26000005": "Freeze Spell",
+    "26000009": "Poison Spell",
+    "26000010": "Earthquake Spell",
+    "26000011": "Haste Spell",
+    "26000016": "Clone Spell",
+    "26000017": "Skeleton Spell",
+    "26000028": "Bat Spell",
+    "26000035": "Invisibility Spell",
+    "26000053": "Recall Spell",
+    "26000070": "Overgrowth Spell",
+    "26000098": "Revive Spell",
+    "26000109": "Ice Block Spell",
     "73000000": "L.A.S.S.I.",
     "73000001": "Electro Owl",
     "73000002": "Mighty Yak",
-    "73000003": "Unicorn"
+    "73000003": "Unicorn",
+    "73000004": "Phoenix",
+    "73000007": "Poison Lizard",
+    "73000008": "Diggy",
+    "73000009": "Frosty",
+    "73000010": "Spirit Fox",
+    "73000011": "Angry Jelly",
+    "73000016": "Sneezy"
+  };
+
+  const helperNames = {
+    "93000000": "Builder's Apprentice",
+    "93000001": "Lab Assistant",
+    "93000002": "Prospector",
+    "93000003": "Alchemist"
   };
 
   const $ = id => document.getElementById(id);
@@ -381,6 +492,8 @@
         state.playerTag = saved.playerTag || "";
         state.townHall = saved.townHall || null;
         state.exportTimestamp = saved.exportTimestamp || null;
+        state.helpers = Array.isArray(saved.helpers) ? saved.helpers : [];
+        state.standardBuilderCount = Number(saved.standardBuilderCount) === 5 ? 5 : 6;
       }
     } catch (e) {
       console.warn("Could not load saved tracker data:", e);
@@ -415,16 +528,12 @@
     return itemNames[key] || fallback || `Item ${key || "unknown"}`;
   }
 
-  function getTypeFromPath(path) {
-    const p = path.toLowerCase();
-
-    if (p.includes("hero")) return "Hero";
-    if (p.includes("pet")) return "Pet";
-    if (p.includes("unit") || p.includes("troop")) return "Laboratory";
-    if (p.includes("spell")) return "Laboratory";
-    if (p.includes("building")) return "Building";
-
-    return "Upgrade";
+  function getTypeFromSection(section) {
+    if (section === "heroes") return "Hero";
+    if (section === "pets") return "Pet";
+    if (["units", "spells", "siege_machines"].includes(section)) return "Laboratory";
+    if (["buildings", "traps"].includes(section)) return "Building";
+    return "Other";
   }
 
   function findTag(obj) {
@@ -440,109 +549,80 @@
   }
 
   function findTownHall(obj) {
-    // Search building entries for the Town Hall ID.
-    let level = null;
-
-    function walk(value) {
-      if (!value || typeof value !== "object") return;
-
-      if (Array.isArray(value)) {
-        value.forEach(walk);
-        return;
-      }
-
-      const id = value.data ?? value.id ?? value.buildingId ?? value.building;
-      const candidateLevel = value.level ?? value.lvl;
-
-      if (String(id) === "1000001" && Number.isFinite(Number(candidateLevel))) {
-        level = Number(candidateLevel);
-      }
-
-      Object.values(value).forEach(walk);
-    }
-
-    walk(obj);
-    return level;
+    const buildings = Array.isArray(obj.buildings) ? obj.buildings : [];
+    const townHall = buildings.find(item => String(item.data) === "1000001");
+    return townHall && Number.isFinite(Number(townHall.lvl)) ? Number(townHall.lvl) : null;
   }
 
+  // Only inspect Home Village sections. Sections ending in "2" are Builder Base and are intentionally skipped.
   function collectTimers(obj, exportTimeMs) {
     const found = [];
-    const seen = new Set();
+    const sections = ["buildings", "traps", "units", "siege_machines", "heroes", "spells", "pets"];
 
-    function walk(value, path) {
-      if (!value || typeof value !== "object") return;
+    for (const section of sections) {
+      const entries = Array.isArray(obj[section]) ? obj[section] : [];
+      for (const item of entries) {
+        if (!item || typeof item !== "object") continue;
 
-      if (Array.isArray(value)) {
-        value.forEach((item, index) => walk(item, `${path}[${index}]`));
-        return;
+        const seconds = Number(item.timer);
+        if (!Number.isFinite(seconds) || seconds <= 0) continue;
+
+        const dataId = item.data ?? item.id;
+        const type = getTypeFromSection(section);
+        const name = getName(dataId, item.name || `${type} item ${dataId ?? "unknown"}`);
+
+        found.push({
+          id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}-${found.length}`,
+          sourceId: dataId == null ? "" : String(dataId),
+          name,
+          type,
+          section,
+          level: item.lvl == null ? null : Number(item.lvl),
+          finishAt: exportTimeMs + seconds * 1000,
+          remainingSecondsAtImport: seconds,
+          extra: item.extra === true,
+          helperRecurrent: item.helper_recurrent === true,
+          helperTimerSeconds: Number.isFinite(Number(item.helper_timer)) ? Number(item.helper_timer) : null
+        });
       }
-
-      const timerValue = value.timer ?? value.remainingTime ?? value.remaining_time;
-      const id = value.data ?? value.id ?? value.unitId ?? value.buildingId ?? value.heroId;
-      const level = value.level ?? value.lvl;
-
-      if (timerValue !== undefined && timerValue !== null) {
-        const seconds = Number(timerValue);
-
-        if (Number.isFinite(seconds) && seconds > 0) {
-          const key = `${path}|${id}|${seconds}|${level}`;
-
-          if (!seen.has(key)) {
-            seen.add(key);
-
-            const type = getTypeFromPath(path);
-            let name = getName(id, value.name);
-
-            // Avoid misleading generic name for known multi-item export IDs.
-            if (String(id) === "1000027") {
-              name = value.name || `Building (${id})`;
-            }
-
-            found.push({
-              id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-              sourceId: id == null ? "" : String(id),
-              name,
-              type,
-              level: level == null ? null : Number(level),
-              finishAt: exportTimeMs + seconds * 1000
-            });
-          }
-        }
-      }
-
-      Object.entries(value).forEach(([key, child]) => {
-        if (key === "timer" || key === "remainingTime" || key === "remaining_time") return;
-        walk(child, path ? `${path}.${key}` : key);
-      });
     }
 
-    walk(obj, "");
     return found;
   }
 
+  function collectHelpers(rawHelpers, exportTimeMs) {
+    if (!Array.isArray(rawHelpers)) return [];
+    return rawHelpers.map(helper => {
+      const dataId = helper.data;
+      const cooldown = Number(helper.helper_cooldown);
+      return {
+        id: String(dataId ?? ""),
+        name: helperNames[String(dataId)] || `Helper ${dataId ?? ""}`,
+        level: Number(helper.lvl) || 0,
+        cooldownEnd: Number.isFinite(cooldown) && cooldown > 0 ? exportTimeMs + cooldown * 1000 : null
+      };
+    });
+  }
+
   function importExport(json) {
-    const exportSeconds = Number(
-      json.timestamp ??
-      json.exportTimestamp ??
-      json.export_timestamp ??
-      json.time ??
-      Math.floor(Date.now() / 1000)
-    );
+    const exportSeconds = Number(json.timestamp ?? json.exportTimestamp ?? json.export_timestamp);
+    if (!Number.isFinite(exportSeconds) || exportSeconds <= 0) {
+      throw new Error("The export does not contain a valid Unix timestamp.");
+    }
 
-    // Most Clash exports use Unix seconds.
-    const exportTimeMs = exportSeconds > 100000000000
-      ? exportSeconds
-      : exportSeconds * 1000;
-
+    const exportTimeMs = exportSeconds > 100000000000 ? exportSeconds : exportSeconds * 1000;
     state.playerTag = findTag(json);
     state.townHall = findTownHall(json);
     state.exportTimestamp = exportTimeMs;
     state.timers = collectTimers(json, exportTimeMs);
+    state.helpers = collectHelpers(json.helpers, exportTimeMs);
 
     save();
     render();
 
-    alert(`Import complete. Found ${state.timers.length} active timer(s).`);
+    const builderTimers = state.timers.filter(t => t.type === "Building" && !t.extra).length;
+    const goblinTimers = state.timers.filter(t => t.type === "Building" && t.extra).length;
+    alert(`Import successful: ${state.timers.length} Home Village timers found. ${builderTimers} regular builders busy; ${goblinTimers} extra builder slot(s).`);
   }
 
   function render() {
@@ -551,41 +631,67 @@
 
     const now = Date.now();
     const active = state.timers.filter(t => t.finishAt > now);
-    const next = active.length
-      ? Math.min(...active.map(t => t.finishAt))
-      : null;
+    const next = active.length ? Math.min(...active.map(t => t.finishAt)) : null;
+    const buildingTimers = active.filter(t => t.type === "Building");
+    const regularBuilders = buildingTimers.filter(t => !t.extra);
+    const goblinBuilders = buildingTimers.filter(t => t.extra);
+    const labTimers = active.filter(t => t.type === "Laboratory");
 
     $("activeCount").textContent = active.length;
     $("nextFinish").textContent = next ? formatDuration(next - now) : "—";
+    $("buildersBusy").textContent = `${regularBuilders.length} / ${state.standardBuilderCount}`;
+    $("buildersFree").textContent = Math.max(0, state.standardBuilderCount - regularBuilders.length);
+    $("goblinBuilder").textContent = goblinBuilders.length ? `${goblinBuilders.length} active` : "Idle";
+    $("labCount").textContent = labTimers.length;
+    $("builderCapacity").value = String(state.standardBuilderCount);
 
-    const buildingTimers = active.filter(t => t.type === "Building");
-    $("buildersBusy").textContent = buildingTimers.length;
-    $("buildersFree").textContent = "—";
+    const helperList = $("helperList");
+    const helperWithCooldown = state.helpers.find(h => h.cooldownEnd);
+    if (!state.helpers.length) {
+      $("helperSummary").textContent = "No helper details found in this export.";
+      helperList.innerHTML = "";
+    } else {
+      const cooldownRemaining = helperWithCooldown ? helperWithCooldown.cooldownEnd - now : null;
+      $("helperSummary").textContent = cooldownRemaining !== null && cooldownRemaining > 0
+        ? `Shared helper workday resets in ${formatDuration(cooldownRemaining)}.`
+        : "Helpers are ready, or the export did not include a cooldown.";
+      helperList.innerHTML = state.helpers.map(helper => `
+        <div class="helper-row">
+          <div>
+            <strong>${escapeHtml(helper.name)}</strong>
+            <div class="muted">Level ${helper.level}</div>
+          </div>
+          <div class="muted">${helper.cooldownEnd ? formatDuration(helper.cooldownEnd - now) : "Ready / no cooldown"}</div>
+        </div>
+      `).join("");
+    }
 
     const list = $("timerList");
-
     if (!state.timers.length) {
-      list.innerHTML = '<div class="empty">No timers yet. Import your village export or add one manually.</div>';
+      list.innerHTML = '<div class="empty">No active Home Village timers found. Import your village export or add one manually.</div>';
       return;
     }
 
     const sorted = [...state.timers].sort((a, b) => a.finishAt - b.finishAt);
-
     list.innerHTML = sorted.map(timer => {
       const remaining = timer.finishAt - now;
       const complete = remaining <= 0;
-
+      const flags = [];
+      if (timer.extra) flags.push('<span class="flag extra">Extra slot</span>');
+      if (timer.helperRecurrent) flags.push('<span class="flag">Helper: keep assigned</span>');
+      if (timer.helperTimerSeconds) flags.push(`<span class="flag">Helper shift: ${formatDuration(timer.helperTimerSeconds * 1000)}</span>`);
       return `
         <article class="timer">
           <div class="timer-top">
             <div>
-              <div class="timer-type">${escapeHtml(timer.type)}</div>
+              <div class="timer-type">${escapeHtml(timer.type)} · ${escapeHtml(timer.section || "Manual")}</div>
               <div class="timer-name">${escapeHtml(timer.name)}${timer.level ? ` · Lv. ${timer.level}` : ""}</div>
             </div>
             <button class="danger" onclick="removeTimer('${timer.id}')">Remove</button>
           </div>
           <div class="countdown">${formatDuration(remaining)}</div>
           <div class="finish">${complete ? "Timer finished" : `Finishes: ${formatDate(timer.finishAt)}`}</div>
+          ${flags.length ? `<div class="timer-flags">${flags.join("")}</div>` : ""}
         </article>
       `;
     }).join("");
@@ -639,7 +745,11 @@
       name,
       type,
       level: null,
-      finishAt: Date.now() + hours * 60 * 60 * 1000
+      section: "manual",
+      finishAt: Date.now() + hours * 60 * 60 * 1000,
+      extra: false,
+      helperRecurrent: false,
+      helperTimerSeconds: null
     });
 
     save();
@@ -649,10 +759,17 @@
     $("manualHours").value = "";
   });
 
+  $("builderCapacity").addEventListener("change", event => {
+    state.standardBuilderCount = Number(event.target.value) === 5 ? 5 : 6;
+    save();
+    render();
+  });
+
   $("clearButton").addEventListener("click", () => {
     if (!confirm("Clear all imported and manually added timers?")) return;
 
     state.timers = [];
+    state.helpers = [];
     state.playerTag = "";
     state.townHall = null;
     state.exportTimestamp = null;
