@@ -209,6 +209,7 @@
     .helper-row:last-child { border-bottom:0; }
     .inline-setting { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; }
     .inline-setting select { width:auto; padding:7px 10px; }
+    textarea { display:block; width:100%; min-height:130px; margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:10px; background:#0e1725; color:var(--text); font:inherit; line-height:1.45; resize:vertical; }
 
     @media (max-width: 480px) {
       body { padding: 12px; }
@@ -247,9 +248,10 @@
     </button>
 
     <p class="muted">
-      Import the JSON file exported by Clash of Clans. This tracker runs locally
-      in your browser and does not require your Supercell login.
+      Import your Clash of Clans Data Export as a file or paste the copied JSON below. Your export is processed locally in this browser; no Supercell login is needed.
     </p>
+    <textarea id="jsonPaste" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Or paste your copied Clash of Clans export JSON here..."></textarea>
+    <button id="pasteImport" style="margin-top:10px;width:100%">Import pasted JSON</button>
   </section>
 
   <section class="panel">
@@ -712,6 +714,22 @@
     save();
     render();
   };
+
+  $("pasteImport").addEventListener("click", () => {
+    const text = $("jsonPaste").value.trim();
+    if (!text) {
+      alert("Paste your Clash of Clans export JSON first.");
+      return;
+    }
+    try {
+      const json = JSON.parse(text);
+      importExport(json);
+      $("jsonPaste").value = "";
+    } catch (error) {
+      alert("Could not import this JSON. Check that you pasted the complete Clash of Clans Data Export.");
+      console.error(error);
+    }
+  });
 
   $("jsonFile").addEventListener("change", async event => {
     const file = event.target.files?.[0];
