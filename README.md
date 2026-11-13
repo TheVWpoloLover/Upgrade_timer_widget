@@ -15,7 +15,7 @@ A mobile-friendly, single-page Home Village upgrade tracker.
 
 **Project Pages URL:**
 
-https://thewpololover.github.io/Upgrade_timer_widget/
+https://thevwpololover.github.io/Upgrade_timer_widget/
 
 This is a project site, so the repository name is part of the URL. Do not open only `https://thewpololover.github.io/`—that is the account's root site and is not this repository's project site.
 
