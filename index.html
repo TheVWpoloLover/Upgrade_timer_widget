@@ -434,6 +434,7 @@
       <div class="stat">
         <span class="muted">Regular builders busy</span>
         <strong id="buildersBusy">—</strong>
+        <span class="muted" id="builderBreakdown">— building + — hero</span>
       </div>
       <div class="stat">
         <span class="muted">Regular builders free</span>
@@ -455,7 +456,7 @@
         <option value="6" selected>6 builders</option>
       </select>
     </div>
-    <p class="muted">Regular builder counts exclude an upgrade marked as an extra slot (for example, the Goblin Builder). Adjust the builder count to match your village.</p>
+    <p class="muted">Regular builder counts include building and Hero Hall upgrades. Upgrades marked as an extra slot (such as the Goblin Builder) are excluded. Adjust the capacity to match your village.</p>
   </section>
 
   <section class="panel">
@@ -853,9 +854,11 @@
     save();
     render();
 
-    const builderTimers = state.timers.filter(t => t.type === "Building" && !t.extra).length;
+    const regularBuildingTimers = state.timers.filter(t => t.type === "Building" && !t.extra).length;
+    const heroTimers = state.timers.filter(t => t.type === "Hero").length;
+    const regularBuilderCount = regularBuildingTimers + heroTimers;
     const goblinTimers = state.timers.filter(t => t.type === "Building" && t.extra).length;
-    alert(`Import successful: ${state.timers.length} Home Village timers found. ${builderTimers} regular builders busy; ${goblinTimers} extra builder slot(s).`);
+    alert(`Import successful: ${state.timers.length} Home Village timers found. ${regularBuilderCount} regular Builders busy (${regularBuildingTimers} building + ${heroTimers} hero); ${goblinTimers} extra builder slot(s).`);
   }
 
   function render() {
@@ -866,14 +869,21 @@
     const active = state.timers.filter(t => t.finishAt > now);
     const next = active.length ? Math.min(...active.map(t => t.finishAt)) : null;
     const buildingTimers = active.filter(t => t.type === "Building");
-    const regularBuilders = buildingTimers.filter(t => !t.extra);
+    const regularBuildingTimers = buildingTimers.filter(t => !t.extra);
+    const heroTimers = active.filter(t => t.type === "Hero");
+    // Hero upgrades in the Hero Hall occupy a regular Builder just like building upgrades.
+    const regularBuilderCount = regularBuildingTimers.length + heroTimers.length;
     const goblinBuilders = buildingTimers.filter(t => t.extra);
     const labTimers = active.filter(t => t.type === "Laboratory");
 
     $("activeCount").textContent = active.length;
     $("nextFinish").textContent = next ? formatDuration(next - now) : "—";
-    $("buildersBusy").textContent = `${regularBuilders.length} / ${state.standardBuilderCount}`;
-    $("buildersFree").textContent = Math.max(0, state.standardBuilderCount - regularBuilders.length);
+    $("buildersBusy").textContent = `${regularBuilderCount} / ${state.standardBuilderCount}`;
+    $("buildersFree").textContent = Math.max(0, state.standardBuilderCount - regularBuilderCount);
+    const builderBreakdown = $("builderBreakdown");
+    if (builderBreakdown) {
+      builderBreakdown.textContent = `${regularBuildingTimers.length} building + ${heroTimers.length} hero`;
+    }
     $("goblinBuilder").textContent = goblinBuilders.length ? `${goblinBuilders.length} active` : "Idle";
     $("labCount").textContent = labTimers.length;
     $("builderCapacity").value = String(state.standardBuilderCount);
