@@ -26,7 +26,7 @@ jobs:
 
       - name: Validate tracker JavaScript
         run: |
-          node -e "const fs=require('fs'); const html=fs.readFileSync('index.html','utf8'); const match=html.match(/<script>([\\s\\S]*?)<\\/script>/); if (!match) throw new Error('No app script found'); new Function(match[1]); console.log('index.html JavaScript syntax is valid');"
+          node -e "const fs=require('fs'); const html=fs.readFileSync('index.html','utf8'); const start=html.indexOf('<script>'); const end=html.lastIndexOf('</script>'); if (start < 0 || end < start) throw new Error('No app script found'); new Function(html.slice(start + 8, end)); console.log('index.html JavaScript syntax is valid');"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
