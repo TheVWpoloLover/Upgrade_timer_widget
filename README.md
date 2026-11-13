@@ -57,8 +57,3 @@ This is an unofficial client-side tracker, not a Supercell product. Timers recal
 Upgrade artwork uses public Clash of Clans image assets served by [ClashKing Assets](https://assets.clashk.ing/). Asset paths follow the published asset directory structure. Please credit ClashKing Assets when reusing these hosted files. Clash of Clans names and artwork belong to Supercell; this is an unofficial fan project and is not affiliated with or endorsed by Supercell.
 
 The interface uses a Clash-inspired warm wood, stone, and gold colour palette. The game artwork is loaded separately from the asset host, so images require an internet connection; emoji fallbacks appear if an image cannot be loaded.
-
-
-## Social launch
-
-The LinkedIn launch copy and proposed publishing time are saved in [`marketing/linkedin-launch-post.md`](marketing/linkedin-launch-post.md). The target time is Sunday, 15 November 2026 at 6:00 PM IST. This is a draft and proposed schedule; it is not considered scheduled until confirmed in the connected social publisher.
