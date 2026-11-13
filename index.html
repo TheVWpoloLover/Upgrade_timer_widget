@@ -216,6 +216,173 @@
       .form-grid { grid-template-columns: 1fr; }
       .form-grid .wide { grid-column: auto; }
     }
+  
+    /* Clash-inspired stone, timber and gold theme */
+    :root {
+      --bg: #21160d;
+      --panel: #3b2818;
+      --panel2: #51371f;
+      --text: #fff2cf;
+      --muted: #d4bd8b;
+      --accent: #ffc83d;
+      --blue: #55b9ef;
+      --red: #ff8877;
+      --border: #91642f;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse at 50% -20%, rgba(255, 197, 66, .16), transparent 52%),
+        repeating-linear-gradient(135deg, rgba(255,255,255,.018) 0 2px, transparent 2px 7px),
+        linear-gradient(180deg, #2b1b0e 0%, #1b120b 100%);
+    }
+
+    header {
+      padding: 16px 4px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #ffd76a;
+      text-shadow: 0 2px 0 #6b3d11, 0 4px 12px rgba(0,0,0,.6);
+      letter-spacing: .02em;
+    }
+
+    header p { color: #e5c58b; }
+
+    .panel {
+      background: linear-gradient(155deg, rgba(91,62,35,.98), rgba(48,32,19,.98));
+      border: 1px solid #a87939;
+      box-shadow: 0 5px 0 rgba(20,11,5,.65), inset 0 1px 0 rgba(255,225,157,.12);
+    }
+
+    .stat {
+      background: linear-gradient(145deg, #694822, #3e2917);
+      border: 1px solid rgba(225,174,82,.38);
+    }
+
+    .stat strong { color: #ffdc79; }
+
+    button {
+      background: linear-gradient(180deg, #ffe17b, #e9a928);
+      color: #442609;
+      box-shadow: 0 3px 0 #8a5315;
+    }
+
+    button:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a5315; }
+
+    button.secondary {
+      background: linear-gradient(180deg, #6e94a9, #37647c);
+      color: #f1fbff;
+      border: 1px solid #86c8e8;
+      box-shadow: 0 3px 0 #1d4257;
+    }
+
+    button.danger {
+      background: linear-gradient(180deg, #b64b35, #762a20);
+      color: #fff1e7;
+      box-shadow: 0 3px 0 #49160f;
+    }
+
+    input, select, textarea {
+      background: #24170d;
+      color: var(--text);
+      border-color: #8d622e;
+    }
+
+    .file-label {
+      background: linear-gradient(180deg, #ffe17b, #e9a928);
+      color: #442609;
+      box-shadow: 0 3px 0 #8a5315;
+    }
+
+    .timer {
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr);
+      gap: 13px;
+      align-items: center;
+      border: 1px solid #9a6b35;
+      background: linear-gradient(145deg, #634323, #392515);
+      box-shadow: inset 0 1px 0 rgba(255,224,165,.1), 0 3px 0 rgba(18,10,4,.4);
+    }
+
+    .timer-art {
+      width: 76px;
+      height: 76px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 2px solid #c99542;
+      background: radial-gradient(circle, #8a632d, #302013 72%);
+      box-shadow: inset 0 1px 8px rgba(0,0,0,.5);
+    }
+
+    .timer-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 4px;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.45));
+    }
+
+    .timer-art .art-fallback {
+      display: none;
+      font-size: 2.1rem;
+      line-height: 1;
+    }
+
+    .timer-content { min-width: 0; }
+
+    .timer-type {
+      color: #8dd8ff;
+      font-weight: 800;
+    }
+
+    .timer-name { color: #fff4d6; font-size: 1rem; }
+
+    .countdown {
+      color: #ffe17b;
+      font-size: 1.32rem;
+      text-shadow: 0 1px 2px #331d08;
+    }
+
+    .finish { color: #e0c99c; }
+
+    .flag {
+      border-color: #a87939;
+      color: #f2d8a0;
+      background: rgba(26,16,8,.28);
+    }
+
+    .flag.extra {
+      color: #ffe089;
+      border-color: #e4aa38;
+    }
+
+    .flag.next {
+      color: #162b12;
+      background: #9de56c;
+      border-color: #c8ff9b;
+      font-weight: 800;
+    }
+
+    .notice {
+      background: #382719;
+      border-left-color: #55b9ef;
+      color: #d4bd8b;
+    }
+
+    .helper-row { border-color: #80582e; }
+
+    @media (max-width: 420px) {
+      .timer { grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 10px; }
+      .timer-art { width: 64px; height: 64px; }
+      .countdown { font-size: 1.16rem; }
+      .timer-top { align-items: center; }
+      .timer-top button { padding: 7px 9px; font-size: .78rem; }
+    }
+
   </style>
 </head>
 
@@ -327,6 +494,7 @@
     suspend background activity, so the display refreshes when you reopen it.
     The tracker uses your device clock for countdowns.
   </div>
+    <p style="text-align:center;margin:14px 4px 24px;font-size:.75rem;color:#bca174">Game artwork © Supercell. Asset icons provided by <a href="https://assets.clashk.ing/" target="_blank" rel="noopener" style="color:#f4cc70">ClashKing Assets</a>. Unofficial fan project; not affiliated with Supercell.</p>
 </main>
 
 <script>
@@ -606,6 +774,69 @@
     });
   }
 
+
+  const assetSlugs = {
+    buildings: {
+      "1000015": "builder's_hut",
+      "1000024": "dark_elixir_storage",
+      "1000019": "hidden_tesla"
+    },
+    heroes: {
+      "28000006": "minion_prince"
+    },
+    units: {
+      "4000065": "dragon_rider",
+      "4000123": "druid"
+    },
+    pets: {
+      "73000009": "frosty"
+    }
+  };
+
+  function assetSlug(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[’']/g, "")
+      .replace(/\./g, "")
+      .replace(/\?/g, "")
+      .replace(/\s+/g, "_");
+  }
+
+  function getUpgradeImage(timer) {
+    const id = String(timer.sourceId || "");
+    const section = timer.section || "";
+    const explicit = assetSlugs[section]?.[id];
+
+    if (section === "buildings" && explicit) {
+      return `https://assets.clashk.ing/buildings/home-village/${encodeURIComponent(explicit).replace(/%27/gi, "'")}/level_${timer.level || 1}.webp`;
+    }
+    if (section === "heroes") {
+      const slug = explicit || assetSlug(timer.name);
+      return `https://assets.clashk.ing/heroes/${slug}/icon.webp`;
+    }
+    if (section === "pets") {
+      const slug = explicit || assetSlug(timer.name);
+      return `https://assets.clashk.ing/pets/${slug}/icon.webp`;
+    }
+    if (section === "units" || section === "siege_machines") {
+      const slug = explicit || assetSlug(timer.name);
+      return `https://assets.clashk.ing/troops/${slug}/icon.webp`;
+    }
+    if (section === "spells") {
+      const slug = assetSlug(timer.name.replace(/\\s+Spell$/i, ""));
+      return `https://assets.clashk.ing/spells/${slug}_spell.webp`;
+    }
+    return "";
+  }
+
+  function fallbackArt(timer) {
+    if (timer.section === "heroes") return "🦸";
+    if (timer.section === "pets") return "🐾";
+    if (timer.section === "units" || timer.section === "siege_machines") return "⚔️";
+    if (timer.section === "spells") return "✨";
+    return "🏰";
+  }
+
   function importExport(json) {
     const exportSeconds = Number(json.timestamp ?? json.exportTimestamp ?? json.export_timestamp);
     if (!Number.isFinite(exportSeconds) || exportSeconds <= 0) {
@@ -674,26 +905,39 @@
       return;
     }
 
-    const sorted = [...state.timers].sort((a, b) => a.finishAt - b.finishAt);
-    list.innerHTML = sorted.map(timer => {
+    const sorted = [...state.timers].sort((a, b) => {
+      const aDone = a.finishAt <= now;
+      const bDone = b.finishAt <= now;
+      if (aDone !== bDone) return aDone ? 1 : -1;
+      return a.finishAt - b.finishAt;
+    });
+    list.innerHTML = sorted.map((timer, index) => {
       const remaining = timer.finishAt - now;
       const complete = remaining <= 0;
+      const image = getUpgradeImage(timer);
       const flags = [];
-      if (timer.extra) flags.push('<span class="flag extra">Extra slot</span>');
+      if (!complete && index === 0) flags.push('<span class="flag next">FINISHING NEXT</span>');
+      if (timer.extra) flags.push('<span class="flag extra">Extra builder slot</span>');
       if (timer.helperRecurrent) flags.push('<span class="flag">Helper: keep assigned</span>');
       if (timer.helperTimerSeconds) flags.push(`<span class="flag">Helper shift: ${formatDuration(timer.helperTimerSeconds * 1000)}</span>`);
       return `
         <article class="timer">
-          <div class="timer-top">
-            <div>
-              <div class="timer-type">${escapeHtml(timer.type)} · ${escapeHtml(timer.section || "Manual")}</div>
-              <div class="timer-name">${escapeHtml(timer.name)}${timer.level ? ` · Lv. ${timer.level}` : ""}</div>
-            </div>
-            <button class="danger" onclick="removeTimer('${timer.id}')">Remove</button>
+          <div class="timer-art">
+            ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(timer.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">` : ""}
+            <span class="art-fallback" style="display:${image ? "none" : "grid"}">${fallbackArt(timer)}</span>
           </div>
-          <div class="countdown">${formatDuration(remaining)}</div>
-          <div class="finish">${complete ? "Timer finished" : `Finishes: ${formatDate(timer.finishAt)}`}</div>
-          ${flags.length ? `<div class="timer-flags">${flags.join("")}</div>` : ""}
+          <div class="timer-content">
+            <div class="timer-top">
+              <div style="min-width:0">
+                <div class="timer-type">${escapeHtml(timer.type)} · ${escapeHtml(timer.section || "Manual")}</div>
+                <div class="timer-name">${escapeHtml(timer.name)}${timer.level ? ` · Lv. ${timer.level}` : ""}</div>
+              </div>
+              <button class="danger" onclick="removeTimer('${timer.id}')">Remove</button>
+            </div>
+            <div class="countdown">${formatDuration(remaining)}</div>
+            <div class="finish">${complete ? "Completed" : `Finishes: ${formatDate(timer.finishAt)}`}</div>
+            ${flags.length ? `<div class="timer-flags">${flags.join("")}</div>` : ""}
+          </div>
         </article>
       `;
     }).join("");
